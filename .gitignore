@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 
+.DS_Store
+
 # Distribution / packaging
 *.egg-info/
 dist/
