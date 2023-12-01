@@ -7,6 +7,7 @@ from plaque_db import PlaqueDB
 from PIL import Image
 import os
 import uuid
+import shlex
 
 def get_exif(filename):
     image = Image.open(filename)
@@ -50,10 +51,46 @@ def get_decimal_from_dms(dms, ref):
 
     return degrees + minutes + seconds
 
+# create a method that will convert any heic files to jpeg using imagemagick and delete the original files
+
+def convert_heic_to_jpeg():
+    print("Converting HEIC files to JPEG")
+    
+    # Directory containing the photos
+    photo_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'photos')
+    
+    # Iterate over each photo
+    for photo in os.listdir(photo_dir):
+        
+        # if the file isn't a photo file then skip
+        if not photo.lower().endswith(('heic', 'heif')):
+            continue
+        
+        # Full path of the photo
+        photo_path = os.path.join(os.getcwd(), 'data/photos/', photo)
+        
+        # print that we are processing the photo
+        print(f'Converting {photo_path} to jpeg')
+        
+        # change photo_path to remove the heic extension
+        new_photo_path = os.path.splitext(photo_path)[0] + '.jpeg'
+        
+        # escape the paths for shell execution
+        escaped_photo_path = shlex.quote(photo_path)
+        escaped_new_photo_path = shlex.quote(new_photo_path)
+        
+        # convert the photo to jpeg
+        os.system(f'magick convert {escaped_photo_path} {escaped_new_photo_path}')
+        
+        # delete the original photo
+        os.system(f'rm {escaped_photo_path}')
+
 def main():
     # Directory containing the photos
     photo_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'photos')
-
+    
+    convert_heic_to_jpeg()
+    
     extractor = ImageTextExtractor()
     cloud_storage_bucket = CloudStorageBucket()
     cloud_storage_bucket.delete_all_files()
